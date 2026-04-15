@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Record System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>🎓 Student Record System</h1>
+
+  <div class="card">
+    <input id="name" placeholder="Name" />
+    <input id="course" placeholder="Course (BSIT/BSCS)" />
+    <input id="year" placeholder="Year" />
+    <button onclick="addStudent()">Add Student</button>
+  </div>
+
+  <div class="card">
+    <input id="search" placeholder="Search student..." oninput="searchStudent()" />
+    
+    <select id="filter" onchange="filterCourse()">
+      <option value="">Filter by Course</option>
+      <option value="BSIT">BSIT</option>
+      <option value="BSCS">BSCS</option>
+      <option value="BSIS">BSIS</option>
+    </select>
+
+    <button onclick="loadStudents()">Reset</button>
+  </div>
+
+  <ul id="list"></ul>
+
+</div>
+
+<script>
+let editingId = null;
+
+// LOAD ALL
+async function loadStudents() {
+  const res = await fetch("/students");
+  const data = await res.json();
+  render(data);
+}
+
+// SEARCH
+async function searchStudent() {
+  const name = document.getElementById("search").value;
+  if (!name) return loadStudents();
+
+  const res = await fetch(`/students/search?name=${name}`);
+  const data = await res.json();
+  render(data);
+}
+
+// FILTER
+async function filterCourse() {
+  const course = document.getElementById("filter").value;
+  if (!course) return loadStudents();
+
+  const res = await fetch(`/students/course/${course}`);
+  const data = await res.json();
+  render(data);
+}
+
+// ADD / UPDATE
+async function addStudent() {
+  const name = document.getElementById("name").value;
+  const course = document.getElementById("course").value;
+  const year = document.getElementById("year").value;
+
+  if (!name || !course || !year) return alert("Fill all fields");
+
+  if (editingId) {
+    await fetch(`/students/${editingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, course, year })
+    });
+    editingId = null;
+  } else {
+    await fetch("/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, course, year })
+    });
+  }
+
+  document.getElementById("name").value = "";
+  document.getElementById("course").value = "";
+  document.getElementById("year").value = "";
+
+  loadStudents();
+}
+
+// DELETE
+async function deleteStudent(id) {
+  await fetch(`/students/${id}`, { method: "DELETE" });
+  loadStudents();
+}
+
+// EDIT
+function editStudent(student) {
+  document.getElementById("name").value = student.name;
+  document.getElementById("course").value = student.course;
+  document.getElementById("year").value = student.year;
+  editingId = student.id;
+}
+
+// RENDER UI
+function render(data) {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(s => {
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      <div>
+        <b>${s.name}</b> | ${s.course} | Year ${s.year}
+      </div>
+      <div>
+        <button onclick='editStudent(${JSON.stringify(s)})'>Edit</button>
+        <button onclick='deleteStudent(${s.id})'>Delete</button>
+      </div>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+loadStudents();
+</script>
+
+</body>
+</html>
