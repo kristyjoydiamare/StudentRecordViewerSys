@@ -40,7 +40,7 @@ let editingId = null;
 
 // LOAD ALL
 async function loadStudents() {
-  const res = await fetch("/students");
+  const res = await fetch("https://studentrecordviewersys.onrender.com//students");
   const data = await res.json();
   render(data);
 }
@@ -50,7 +50,7 @@ async function searchStudent() {
   const name = document.getElementById("search").value;
   if (!name) return loadStudents();
 
-  const res = await fetch(`/students/search?name=${name}`);
+  const res = await fetch(`https://studentrecordviewersys.onrender.com//students/search?name=${name}`);
   const data = await res.json();
   render(data);
 }
@@ -60,7 +60,7 @@ async function filterCourse() {
   const course = document.getElementById("filter").value;
   if (!course) return loadStudents();
 
-  const res = await fetch(`/students/course/${course}`);
+  const res = await fetch(`https://studentrecordviewersys.onrender.com//students/course/${course}`);
   const data = await res.json();
   render(data);
 }
@@ -74,14 +74,14 @@ async function addStudent() {
   if (!name || !course || !year) return alert("Fill all fields");
 
   if (editingId) {
-    await fetch(`/students/${editingId}`, {
+    await fetch(`https://studentrecordviewersys.onrender.com//students/${editingId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, course, year })
     });
     editingId = null;
   } else {
-    await fetch("/students", {
+    await fetch("https://studentrecordviewersys.onrender.com//students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, course, year })
@@ -97,7 +97,7 @@ async function addStudent() {
 
 // DELETE
 async function deleteStudent(id) {
-  await fetch(`/students/${id}`, { method: "DELETE" });
+  await fetch(`https://studentrecordviewersys.onrender.com//students/${id}`, { method: "DELETE" });
   loadStudents();
 }
 
